@@ -1171,7 +1171,6 @@ form label {
 }
 
 @media (max-width: 800px) {
-
   .mapDiv {
     width: 100%;
   }
@@ -1279,7 +1278,18 @@ form label {
   }
 }
 
-@media (max-width: 375px) {
+/* @media (max-width: 375px) {
+  .map-menu {
+    position: absolute;
+    z-index: 1;
+    bottom: 160px;
+    right: -10px;
+    color: black;
+    margin-bottom: 10px;
+  }
+} */
+
+@media (max-width: 320px) {
   .map-menu {
     position: absolute;
     z-index: 1;
