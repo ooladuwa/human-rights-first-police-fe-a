@@ -11,6 +11,8 @@ import AntTable from './AntTableComponents/AntTable';
 import { useEasyModeAuth } from '../../store/allIncidentsSlice/easyMode';
 import { useAllIncidents } from '../../store/allIncidentsSlice';
 import ListSelector from './ListSelector';
+import { dashboardModals } from '../../utils/dashboardModals';
+import { Spin } from 'antd';
 
 /** @typedef {import('../../store/allIncidentsSlice').Incident} Incident */
 
@@ -62,12 +64,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     const list = getCurrentList();
     setSelectedIds(sid => sid.filter(id => list.some(inc => inc.incident_id === id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [approvedIncidents, pendingIncidents, formResponses]);
-
-  // gives the active tab a different color
-  const selectedTabButtonStyle = {
-    background: '#095fab'
-  };
 
   // toggles whether or not the addIncident popup is displayed
   const [adding, setAdding] = useState(false);
@@ -77,7 +75,6 @@ const AdminDashboard = () => {
     evt.preventDefault();
     setAdding(true);
   };
-
 
   /**
    * Verifies that an incident has city/state
@@ -93,49 +90,44 @@ const AdminDashboard = () => {
 
   // approves or rejects the selected incidents
   const approveAndRejectHandler = async (newStatus) => {
-
     // Incident must have city and state before being approved
     if (newStatus === 'approved') {
       if (!selectedIds.every(id => verifyCityState(id))) {
-        alert('Incidents must have city and state before being approved!');
+        dashboardModals.locationRequired();
         return;
       }
     }
 
-    easyMode.changeIncidentsStatus(selectedIds, listType, newStatus)
-      .then((res) => {
-        setSelectedIds([]);
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    if (!await dashboardModals.confirmChangeStatus(selectedIds.length, newStatus)) {
+      return;
+    }
+
+    try {
+      await easyMode.changeIncidentsStatus(selectedIds, listType, newStatus);
+      setSelectedIds([]);
+    }
+    catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <>
       {/* Welcome message */}
-      <Welcome pendingCount={pendingIncidents.length} />
+      <Welcome />
 
       {/* Incident "tabs" - unapproved, approved, form responses */}
       <ListSelector listType={listType} setListType={setListType} />
 
       <div className="dashboard-container">
-        <DashboardTop
-          unapprovedIncidents={pendingIncidents}
-          toggleAddIncident={toggleAddIncident}
-          listType={listType}
-        />
+        <DashboardTop toggleAddIncident={toggleAddIncident} listType={listType}/>
 
-        {selectedIds.length > 0 &&
+        <div style={{ visibility: selectedIds.length > 0 ? 'visible' : 'hidden' }}>
           <span>{selectedIds.length} selected</span>
-        }
 
-        {/* Controls for setting the status of selected incidents (unapproved, pending, approved) */}
-        <StatusSelector
-          isVisible={selectedIds.length > 0}
-          listType={listType}
-          onStatusConfirm={approveAndRejectHandler}
-        />
+          {/* Controls for setting the status of selected incidents (unapproved, pending, approved) */}
+          <StatusSelector listType={listType} onStatusConfirm={approveAndRejectHandler}/>
+        </div>
 
         {/* modal popup for adding a new incident */}
         {adding &&
@@ -144,33 +136,35 @@ const AdminDashboard = () => {
           />
         }
 
-        {/* Table for pending incidents */}
-        {listType === 'pending' &&
-          <AntTable
-            selectedIds={selectedIds}
-            setSelectedIds={setSelectedIds}
-            incidents={pendingIncidents}
-            showConfidence={true}
-          />
-        }
+        <Spin spinning={isLoading}>
+          {/* Table for pending incidents */}
+          {listType === 'pending' &&
+            <AntTable
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              incidents={pendingIncidents}
+              showConfidence={true}
+            />
+          }
 
-        {/* Table for approved incidents */}
-        {listType === 'approved' &&
-          <AntTable
-            selectedIds={selectedIds}
-            setSelectedIds={setSelectedIds}
-            incidents={approvedIncidents}
-          />
-        }
+          {/* Table for approved incidents */}
+          {listType === 'approved' &&
+            <AntTable
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              incidents={approvedIncidents}
+            />
+          }
 
-        {/* table for form-responses */}
-        {listType === 'form-responses' &&
-          <AntTable
-            selectedIds={selectedIds}
-            setSelectedIds={setSelectedIds}
-            incidents={formResponses}
-          />
-        }
+          {/* table for form-responses */}
+          {listType === 'form-responses' &&
+            <AntTable
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              incidents={formResponses}
+            />
+          }
+        </Spin>
 
       </div>
     </>

@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { Modal } from 'antd';
+import { InfoCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 /** @typedef {import('../store/allIncidentsSlice').Incident} Incident */
 

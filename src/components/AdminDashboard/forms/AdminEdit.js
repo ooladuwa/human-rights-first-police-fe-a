@@ -45,7 +45,9 @@ function AdminEdit({ initialValues, cancel, cleanup }) {
   return (
     <Form
       form={form}
-      layout="vertical"
+      layout="horizontal"
+      labelCol={{ span: 3 }}
+      wrapperCol={{span: 9}}
       onFinish={handleSubmit}
       initialValues={{
         ...initialValues,
@@ -53,10 +55,10 @@ function AdminEdit({ initialValues, cancel, cleanup }) {
       }}
     >
       <div className="admin-edit-top">
-        <Form.Item name="title" label="Title of Incident">
+        <Form.Item name="title" label="Title">
           <Input />
         </Form.Item>
-        <Form.Item name="description" label="Description of Incident">
+        <Form.Item name="description" label="Description">
           <Input />
         </Form.Item>
         <Form.Item label="Location">
@@ -79,12 +81,16 @@ function AdminEdit({ initialValues, cancel, cleanup }) {
         </Form.Item>
 
         {/* Confidence Rating: */}
-        <div className="dropdown-text-wrap">
+        {/* <div className="dropdown-text-wrap">
           <p className="complete-incident-dropdown-titles-bold">
             Confidence Rating:
           </p>
           <p>{(initialValues.confidence * 100).toFixed(2)}%</p>
-        </div>
+        </div> */}
+
+        <Form.Item label="Confidence">
+          <div>{(initialValues.confidence * 100).toFixed(2)}%</div>
+        </Form.Item>
 
         <Form.Item name="force_rank" label="Force Rank">
           <Select placeholder="Select a Force Rank">

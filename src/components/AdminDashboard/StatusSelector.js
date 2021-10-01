@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-const confirmText = {
-  approved: 'Approve incidents?',
-  pending: 'Unapprove incidents?',
-  rejected: 'Reject incidents?'
-};
 
 /**
  * @typedef StatusSelectorProps
- * @property {boolean} isVisible - whether or not to show/hide component
  * @property {string} listType - which incident list is active (unapproved/approved/form-responses)
  * @property {(newStatus: string) => void} onStatusConfirm - callback function indicating the status type chosen
  */
@@ -20,41 +14,16 @@ const confirmText = {
  * @returns
  */
 const StatusSelector = props => {
-  const { isVisible, listType, onStatusConfirm } = props;
-
-  const [newStatus, setNewStatus] = useState(listType);
-  const [isAskConfirm, setIsAskConfirm] = useState(false);
-
-  useEffect(() => {
-    if (!isVisible) {
-      setNewStatus(listType);
-      setIsAskConfirm(false);
-    }
-  }, [isVisible, listType]);
+  const { listType, onStatusConfirm } = props;
 
   // handler for clicking on new status type (pending, approved, rejected)
-  const statusOnClick = (e, status) => {
-    setNewStatus(status);
-    setIsAskConfirm(true);
-  };
-
-  // cancel handler for status confirmation
-  const cancelOnClick = e => {
-    setIsAskConfirm(false);
-  };
-
-  // confirm handler for status confirmation
-  const yesOnClick = e => {
-    onStatusConfirm(newStatus);
-    setIsAskConfirm(false);
+  const statusOnClick = async (e, status) => {
+    onStatusConfirm(status);
   };
 
   return (
-    <div className="dashboard-top-approve-reject"
-      style={{ visibility: isVisible ? 'visible' : 'collapse' }}>
+    <div className="dashboard-top-approve-reject">
 
-      {!isAskConfirm &&
-        <>
           <span>Change Status:</span>
 
           {listType === 'pending' &&
@@ -78,26 +47,6 @@ const StatusSelector = props => {
             onClick={e => statusOnClick(e, 'rejected')}>
             Rejected
           </button>
-        </>
-      }
-
-      {isAskConfirm &&
-        <>
-          <span>{confirmText[newStatus]}</span>
-
-          <button
-            className='approve-reject-select'
-            onClick={yesOnClick}>
-            Yes
-          </button>
-
-          <button
-            className='approve-reject-select'
-            onClick={cancelOnClick}>
-            Cancel
-          </button>
-        </>
-      }
     </div>
   );
 };
